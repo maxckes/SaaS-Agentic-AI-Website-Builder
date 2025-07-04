@@ -1,49 +1,73 @@
-import { useEffect } from "react"
-import { useTRPC } from "@/trpc/client"
-import { useSuspenseQuery } from "@tanstack/react-query"
-import { MessageCard } from "./messade-card"
-import { MessageForm } from "./message-form"
-import { useRef } from "react"
+import { useEffect } from "react";
+import { useTRPC } from "@/trpc/client";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { MessageCard } from "./messade-card";
+import { MessageForm } from "./message-form";
+import { useRef } from "react";
+import { Fragment } from "@/generated/prisma";
+import { MessageLoading } from "./message-loading";
 
-interface Props{
-    projectID:string
+interface Props {
+  projectID: string;
+  activeFragment: Fragment | null;
+  setActiveFragment: (fragment: Fragment | null) => void;
 }
-const MessageContainers = ({projectID}:Props) => {
-    const trpc = useTRPC()
-    const bottomRef = useRef<HTMLDivElement>(null)
-    const {data:messages} = useSuspenseQuery(trpc.messages.getMany.queryOptions({
-        projectId:projectID,
-    }))
-    useEffect(()=>{
-        const lastAssignedMessage = messages.findLast((message)=>message.role==="ASSISTANT")
-        if(lastAssignedMessage){
-            // bottomRef.current?.scrollIntoView({behavior:"smooth"})
-        }
-    },[messages])
-    useEffect(()=>{
-        if(bottomRef.current){
-            bottomRef.current.scrollIntoView({behavior:"smooth"})
-        }
-    },[messages.length])
-    return (
-        <>
-        <div className="flex flex-col flex-1 min-h-0">
-            <div className="flex flex-col overflow-y-auto min-h-0 ">
-                <div className="pt-2 pr-1">
-                    {messages.map((message)=>(
-                        <MessageCard key={message.id} content={message.content} fragments={message.fragments} role={message.role} createdAt={message.createdAt} isActive={false} onFragmentClick={()=>{}} type={message.type} />
-                    ))}
-                    <div ref={bottomRef}></div>
-                </div>
-            </div>
-           
+const MessageContainers = ({
+  projectID,
+  activeFragment,
+  setActiveFragment,
+}: Props) => {
+  const trpc = useTRPC();
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const { data: messages } = useSuspenseQuery(
+    trpc.messages.getMany.queryOptions({
+      projectId: projectID,
+    },{refetchInterval:5000})
+  );
+  useEffect(() => {
+    const lastAssignedMessageWithFragments = messages.findLast(
+      (message) => message.role === "ASSISTANT" && !!message.fragments
+    );
+    if (lastAssignedMessageWithFragments) {
+      // bottomRef.current?.scrollIntoView({behavior:"smooth"})
+      setActiveFragment(lastAssignedMessageWithFragments.fragments);
+    }
+  }, [messages, setActiveFragment]);
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages.length]);
+  const lastMessage = messages[messages.length - 1];
+  const lastUserMessage = lastMessage.role === "USER";
+  return (
+    <>
+      <div className="flex flex-col flex-1 min-h-0">
+        <div className="flex flex-col overflow-y-auto min-h-0 ">
+          <div className="pt-2 pr-1">
+            {messages.map((message) => (
+              <MessageCard
+                key={message.id}
+                content={message.content}
+                fragments={message.fragments}
+                role={message.role}
+                createdAt={message.createdAt}
+                isActive={activeFragment?.id === message.fragments?.id}
+                onFragmentClick={() => setActiveFragment(message.fragments)}
+                type={message.type}
+              />
+            ))}
+            {lastUserMessage && <MessageLoading />}
+            <div ref={bottomRef}></div>
+          </div>
         </div>
-        <div className="relative p-3 pt-1">
-            <div className="absolute -top-6 left-0 right-0 h-6 bg-gradient-to-b from-transparent to-background/70 pointer-events-none"></div>
-            <MessageForm projectId={projectID} />  
-        </div>
-        </>
-    )
-}
+      </div>
+      <div className="relative p-3 pt-1">
+        <div className="absolute -top-6 left-0 right-0 h-6 bg-gradient-to-b from-transparent to-background/70 pointer-events-none"></div>
+        <MessageForm projectId={projectID} />
+      </div>
+    </>
+  );
+};
 
-export default MessageContainers
+export default MessageContainers;
