@@ -49,38 +49,50 @@ export const MessageForm = ({projectId}:MessageFormProps) => {
         })
     }
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className={cn("relative border p-4 pt-1 rounded-xl bg-sidebar dark:bg-sidebar transition-all",isFocused&&"shadow-xs",showUsage&&"rounded-t-none" )}>
-                <FormField control={form.control} name="value" render={({field})=>(
-                    <TextareaAutosize
-                    className="pt-4 resize-none backgroung-transparent border-none outline-none w-full text-sm font-mono"
-                    {...field}
-                    disabled={isPending}
-                    onFocus={()=>setIsFocused(true)}
-                    onBlur={()=>setIsFocused(false)}
-                    minRows={2}
-                    maxRows={8}
-                    placeholder="How can I help you today?"
-                    onKeyDown={(e)=>{
-                        if(e.key==="Enter"&&(e.ctrlKey || e.metaKey)){
-                            e.preventDefault()
-                            form.handleSubmit(onSubmit)(e)
-                        }
-                    }}
+        <div className="relative group">
+            {/* Background glow */}
+            <div className={cn(
+                "absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur transition-all duration-300",
+                isFocused ? "opacity-100" : "opacity-0 group-hover:opacity-50"
+            )}></div>
+            
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className={cn(
+                    "relative border-2 p-5 pt-2 rounded-2xl transition-all duration-300 backdrop-blur-sm shadow-lg",
+                    "bg-card/80 border-border/50",
+                    isFocused && "border-blue-300 dark:border-blue-700 shadow-xl bg-card/90",
+                    showUsage && "rounded-t-none"
+                )}>
+                    <FormField control={form.control} name="value" render={({field})=>(
+                        <TextareaAutosize
+                        className="pt-4 resize-none background-transparent border-none outline-none w-full text-sm font-medium text-foreground placeholder:text-muted-foreground/70"
+                        {...field}
+                        disabled={isPending}
+                        onFocus={()=>setIsFocused(true)}
+                        onBlur={()=>setIsFocused(false)}
+                        minRows={2}
+                        maxRows={8}
+                        placeholder="✨ Ask me anything about your project..."
+                        onKeyDown={(e)=>{
+                            if(e.key==="Enter"&&(e.ctrlKey || e.metaKey)){
+                                e.preventDefault()
+                                form.handleSubmit(onSubmit)(e)
+                            }
+                        }}
+                        />
+                    )}
                     />
-                )}
-                />
-                <div className="flex gap-x-2 items-end justify-between pt-2">
-                    <div className="flex items-center gap-2">
-                        <div className="text-[10px] text-muted-foreground font-mono">
-                            <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-                                <span className="text-xs">&#8984;</span>
-                                <span className="">Enter</span>
-                            </kbd>
-                            &nbsp;to Submit
-                        </div>
-                        <Select  defaultValue="gemini-2.5-flash">
-                            <SelectTrigger className="h-5 w-auto bg-transparent border-none shadow-none outline-none text-muted-foreground text-[10px] border-muted-foreground/20 font-mono">
+                    <div className="flex gap-x-3 items-end justify-between pt-3">
+                        <div className="flex items-center gap-3">
+                            <div className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+                                <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-md border bg-gradient-to-r from-slate-100 to-gray-100 dark:from-slate-800 dark:to-gray-800 px-2 font-mono text-[10px] font-semibold text-foreground shadow-sm border-border/50">
+                                    <span className="text-xs">⌘</span>
+                                    <span className="">Enter</span>
+                                </kbd>
+                                <span>to Send</span>
+                            </div>
+                        <Select defaultValue="gemini-2.5-flash">
+                            <SelectTrigger className="h-6 w-auto bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900 dark:to-gray-900 border border-border/50 shadow-sm outline-none text-muted-foreground text-[11px] font-medium rounded-md px-2 hover:bg-accent/50 transition-colors">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="max-h-60 overflow-y-auto">
@@ -292,15 +304,33 @@ export const MessageForm = ({projectId}:MessageFormProps) => {
                                     </div>
                                 </SelectItem>
                             </SelectContent>
-                        </Select>
+                            </Select>
+                        </div>
+                        <div className="relative">
+                            <div className={cn(
+                                "absolute -inset-1 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-xl blur transition-opacity duration-300",
+                                isFocused || !isDisabled ? "opacity-100" : "opacity-0"
+                            )}></div>
+                            <Button 
+                                type="submit" 
+                                size="icon" 
+                                className={cn(
+                                    "relative size-9 transition-all duration-300 hover:scale-105 shadow-lg",
+                                    "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600",
+                                    "border-0 text-white"
+                                )} 
+                                disabled={isDisabled}
+                            >
+                                {isPending ? (
+                                    <Loader2Icon className="size-4 animate-spin" />
+                                ) : (
+                                    <ArrowUpIcon className="size-4" />
+                                )}
+                            </Button>
+                        </div>
                     </div>
-                    <Button type="submit" size="icon" className="size-8" disabled={isDisabled}>
-                        {isPending ? <Loader2Icon className="size-4 animate-spin" /> : <ArrowUpIcon className="size-4" />}
-                    </Button>
-                </div>
-                
-                
-            </form>
-        </Form>
+                </form>
+            </Form>
+        </div>
     )
 }

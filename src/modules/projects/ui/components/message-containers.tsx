@@ -19,6 +19,7 @@ const MessageContainers = ({
 }: Props) => {
   const trpc = useTRPC();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const lastAssistantMessageRef = useRef<string | null>(null);
   const { data: messages } = useSuspenseQuery(
     trpc.messages.getMany.queryOptions({
       projectId: projectID,
@@ -26,13 +27,15 @@ const MessageContainers = ({
   );
   useEffect(() => {
     const lastAssignedMessageWithFragments = messages.findLast(
-      (message) => message.role === "ASSISTANT" && !!message.fragments
+      (message) => message.role === "ASSISTANT"
     );
-    if (lastAssignedMessageWithFragments) {
-      // bottomRef.current?.scrollIntoView({behavior:"smooth"})
-      setActiveFragment(lastAssignedMessageWithFragments.fragments);
+
+    if(lastAssignedMessageWithFragments?.fragments && lastAssignedMessageWithFragments.fragments.id !== lastAssistantMessageRef.current){
+        setActiveFragment(lastAssignedMessageWithFragments.fragments)
+        lastAssistantMessageRef.current = lastAssignedMessageWithFragments.fragments.id
     }
   }, [messages, setActiveFragment]);
+
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
@@ -42,29 +45,87 @@ const MessageContainers = ({
   const lastUserMessage = lastMessage.role === "USER";
   return (
     <>
-      <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col overflow-y-auto min-h-0 ">
-          <div className="pt-2 pr-1">
-            {messages.map((message) => (
-              <MessageCard
-                key={message.id}
-                content={message.content}
-                fragments={message.fragments}
-                role={message.role}
-                createdAt={message.createdAt}
-                isActive={activeFragment?.id === message.fragments?.id}
-                onFragmentClick={() => setActiveFragment(message.fragments)}
-                type={message.type}
-              />
-            ))}
-            {lastUserMessage && <MessageLoading />}
-            <div ref={bottomRef}></div>
+      {/* Background pattern */}
+      <div className="absolute inset-0 -z-10 bg-background dark:bg-[radial-gradient(#393439_1px,transparent_1px)] bg-[radial-gradient(#dadde2_1px,transparent_1px)] [background-size:16px_16px] opacity-50"></div>
+      
+      {/* Messages container */}
+      <div className="flex flex-col flex-1 min-h-0 relative">
+        <div className="flex flex-col overflow-y-auto min-h-0 custom-scrollbar">
+          <div className="pt-6 pr-1 pb-4">
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center space-y-6">
+                <div className="relative">
+                  <div className="w-20 h-20 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center">
+                    <span className="text-4xl">💬</span>
+                  </div>
+                  <div className="absolute -inset-2 bg-gradient-to-r from-blue-600/30 to-purple-600/30 rounded-2xl blur animate-pulse"></div>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Start Your Conversation
+                  </h3>
+                  <p className="text-muted-foreground max-w-md">
+                    Send your first message to begin building your AI-powered website. 
+                    Describe what you want to create!
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map((message, index) => (
+                  <div key={message.id} className="relative">
+                    {/* Message connector line */}
+                    {index < messages.length - 1 && (
+                      <div className="absolute left-6 top-16 w-0.5 h-8 bg-gradient-to-b from-border to-transparent"></div>
+                    )}
+                    
+                    <div className="relative">
+                      {/* Glow effect for active fragments */}
+                      {activeFragment?.id === message.fragments?.id && (
+                        <div className="absolute -inset-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur"></div>
+                      )}
+                      
+                      <MessageCard
+                        key={message.id}
+                        content={message.content}
+                        fragments={message.fragments}
+                        role={message.role}
+                        createdAt={message.createdAt}
+                        isActive={activeFragment?.id === message.fragments?.id}
+                        onFragmentClick={() => setActiveFragment(message.fragments)}
+                        type={message.type}
+                      />
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Loading message with enhanced styling */}
+                {lastUserMessage && (
+                  <div className="relative">
+                    <div className="absolute -inset-2 bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-xl blur animate-pulse"></div>
+                    <MessageLoading />
+                  </div>
+                )}
+                
+                <div ref={bottomRef}></div>
+              </div>
+            )}
           </div>
         </div>
       </div>
-      <div className="relative p-3 pt-1">
-        <div className="absolute -top-6 left-0 right-0 h-6 bg-gradient-to-b from-transparent to-background/70 pointer-events-none"></div>
-        <MessageForm projectId={projectID} />
+      
+      {/* Enhanced message form container */}
+      <div className="relative p-4 pt-2">
+        {/* Enhanced gradient overlay */}
+        <div className="absolute -top-8 left-0 right-0 h-8 bg-gradient-to-b from-transparent via-background/50 to-background pointer-events-none"></div>
+        
+        {/* Glassmorphism container for form */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl blur"></div>
+          <div className="relative bg-card/80 border border-border/50 rounded-xl p-4 shadow-lg backdrop-blur-sm">
+            <MessageForm projectId={projectID} />
+          </div>
+        </div>
       </div>
     </>
   );
