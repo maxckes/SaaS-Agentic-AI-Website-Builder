@@ -1,229 +1,274 @@
-# Agentic AI Website Builder (Not Complete Version)
+# 🚀 Agentic AI Website Builder 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/maxckes/SaaS-Agentic-AI-Website-Builder)
 
-A modern, AI-powered website builder built with Next.js 15, featuring intelligent code generation and a comprehensive component library.
+> Transform your ideas into stunning SaaS websites with the power of AI. Just describe what you want, and watch it come to life.
 
-## 🚀 Features
+[![Next.js](https://img.shields.io/badge/Next.js-15.3.3-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC)](https://tailwindcss.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-6.10.1-2D3748)](https://www.prisma.io/)
 
-- **AI-Powered Code Generation**: Generate React/Next.js code snippets using Gemini 2.0 Flash
-- **Type-Safe APIs**: Full-stack type safety with tRPC
-- **Modern UI**: Beautiful, responsive interface with shadcn/ui components
-- **Background Processing**: Serverless function execution with Inngest
-- **Database Integration**: PostgreSQL with Prisma ORM
-- **Real-time Feedback**: Toast notifications and loading states
-- **Dark Mode Support**: Built-in theme switching
-- **Mobile Responsive**: Optimized for all device sizes
+## ✨ Features
 
-## 🛠️ Tech Stack
+### 🤖 AI-Powered Generation
+- **Natural Language Input**: Describe your website in plain English
+- **Multi-Agent AI System**: Specialized agents for different aspects of development
+- **Google Gemini 2.5 Flash**: Powered by advanced AI models
+- **Intelligent Code Generation**: Creates production-ready Next.js applications
 
-- **Framework**: [Next.js 15](https://nextjs.org/) with App Router
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) with [shadcn/ui](https://ui.shadcn.com/)
-- **Database**: [PostgreSQL](https://www.postgresql.org/) with [Prisma](https://www.prisma.io/)
-- **Backend**: [tRPC](https://trpc.io/) for type-safe APIs
-- **Background Jobs**: [Inngest](https://www.inngest.com/) for serverless functions
-- **AI Integration**: [Gemini 2.0 Flash](https://ai.google.dev/) via Inngest Agent Kit
-- **State Management**: [TanStack Query](https://tanstack.com/query) (React Query)
-- **UI Components**: Comprehensive [shadcn/ui](https://ui.shadcn.com/) component library
+### 🎨 Modern Tech Stack
+- **Next.js 15.3.3** with React 19 and TypeScript
+- **shadcn/ui** components for beautiful, accessible interfaces  
+- **Tailwind CSS** for utility-first styling
+- **Prisma ORM** with PostgreSQL database
+- **tRPC** for type-safe API routes
+- **Clerk** for user authentication
 
-## 📦 Installation
+### ⚡ Real-Time Development
+- **Live Code Execution**: E2B sandboxes for secure code running
+- **Split View Interface**: Preview websites alongside source code
+- **Hot Reload**: See changes instantly as AI generates code
+- **Interactive Chat**: Iterate on your project through conversation
+
+### 🔧 Developer Experience
+- **Type Safety**: Full TypeScript support throughout
+- **Component Library**: Pre-built shadcn/ui components
+- **Responsive Design**: Mobile-first approach by default
+- **Modern Tooling**: ESLint, PostCSS, and more
+
+## 🏗️ Architecture
+
+### Multi-Agent AI System
+The application uses **Inngest Agent Kit** to orchestrate multiple specialized AI agents:
+
+- **Summary Agent**: Analyzes requirements and manages project state
+- **Response Agent**: Generates user-friendly explanations
+- **Fragment Title Agent**: Creates descriptive titles for code fragments
+
+### Technology Stack
+
+```mermaid
+graph TB
+    A[Next.js Frontend] --> B[tRPC API]
+    B --> C[Prisma ORM]
+    C --> D[PostgreSQL Database]
+    B --> E[Inngest Agents]
+    E --> F[Google Gemini AI]
+    E --> G[E2B Sandboxes]
+    A --> H[Clerk Auth]
+    A --> I[shadcn/ui Components]
+    A --> J[Tailwind CSS]
+```
+
+### Database Schema
+
+```prisma
+model Project {
+  id        String    @id @default(uuid())
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+  userId    String
+}
+
+model Message {
+  id        String      @id @default(uuid())
+  content   String
+  role      MessageRole
+  type      MessageType
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  fragments Fragment?
+  projectId String
+  project   Project     @relation(fields: [projectId], references: [id])
+}
+
+model Fragment {
+  id         String   @id @default(uuid())
+  messageId  String   @unique
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  sandboxUrl String
+  title      String
+  files      Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 20+ and npm/yarn
+- PostgreSQL database
+- Clerk account for authentication
+- E2B account for code sandboxes
+- Google AI API key for Gemini
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/agentic_ai_db"
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."
+NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
+
+# Inngest
+INNGEST_EVENT_KEY="your-inngest-event-key"
+INNGEST_SIGNING_KEY="your-inngest-signing-key"
+
+# E2B Sandboxes
+E2B_API_KEY="your-e2b-api-key"
+SANDBOX_TIMEOUT="600000"
+
+# Google AI
+GOOGLE_AI_API_KEY="your-gemini-api-key"
+
+# Profile
+NEXT_PUBLIC_AVATAR_URL="https://github.com/yourusername.png"
+```
+
+### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/yourusername/agentic-ai-website-builder.git
    cd agentic-ai-website-builder
    ```
 
 2. **Install dependencies**
    ```bash
    npm install
-   # or
-   yarn install
-   # or
-   pnpm install
    ```
 
-3. **Set up environment variables**
-   Create a `.env.local` file in the root directory:
-   ```env
-   DATABASE_URL="postgresql://username:password@localhost:5432/agentic_ai_db"
-   NEXT_PUBLIC_API_URL="http://localhost:3000"
-   ```
-
-4. **Set up the database**
+3. **Set up the database**
    ```bash
-   # Generate Prisma client
    npx prisma generate
-   
-   # Run database migrations
    npx prisma db push
-   
-   # Seed the database (optional)
    npx prisma db seed
    ```
 
-5. **Start the development server**
+4. **Start the development server**
    ```bash
    npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
    ```
 
-6. **Open your browser**
+5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 🏗️ Project Structure
+## 📁 Project Structure
 
 ```
 agentic-ai-website-builder/
+├── prisma/
+│   ├── schema.prisma          # Database schema
+│   ├── seed.ts               # Database seeding
+│   └── migrations/           # Database migrations
+├── sandbox-templates/
+│   └── nextjs/
+│       ├── e2b.Dockerfile    # E2B sandbox configuration
+│       └── compile_page.sh   # Build script
 ├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── api/               # API routes
-│   │   │   ├── inngest/       # Inngest webhook
-│   │   │   └── trpc/          # tRPC API endpoint
-│   │   ├── globals.css        # Global styles
-│   │   ├── layout.tsx         # Root layout
-│   │   └── page.tsx           # Home page
-│   ├── components/
-│   │   └── ui/                # shadcn/ui components
-│   ├── hooks/                 # Custom React hooks
-│   ├── inngest/               # Background job functions
-│   ├── lib/                   # Utility functions
-│   └── trpc/                  # tRPC configuration
-├── prisma/                    # Database schema and migrations
-├── public/                    # Static assets
+│   ├── app/                  # Next.js app router
+│   │   ├── (home)/          # Home page and auth
+│   │   ├── projects/        # Project management
+│   │   └── api/             # API routes
+│   ├── components/          # Reusable UI components
+│   │   └── ui/              # shadcn/ui components
+│   ├── modules/             # Feature modules
+│   │   ├── projects/        # Project management
+│   │   └── messages/        # Chat functionality
+│   ├── inngest/             # AI agent functions
+│   ├── lib/                 # Utilities and config
+│   ├── trpc/                # tRPC setup
+│   ├── middleware.ts        # Authentication middleware
+│   └── prompt.ts            # AI prompts
 └── package.json
 ```
 
-## 🔧 Configuration
+## 🔧 Key Components
 
-### Database Schema
+### AI Agent System
+Located in `src/inngest/functions.ts`, the multi-agent system includes:
 
-The application uses a simple blog-like schema:
+- **Code Generation**: Creates Next.js applications with shadcn/ui
+- **File Management**: Handles project files and structure  
+- **Terminal Access**: Executes commands in sandboxed environment
+- **Error Handling**: Manages build errors and debugging
 
-```prisma
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
-}
+### Project Interface
+The main project view (`src/modules/projects/ui/views/project-views.tsx`) provides:
 
-model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean @default(false)
-  authorId  Int
-  author    User    @relation(fields: [authorId], references: [id])
-}
-```
+- **Split Layout**: Chat on left, preview/code on right
+- **Live Preview**: Real-time website rendering
+- **Code Explorer**: File tree and syntax highlighting
+- **Interactive Chat**: Natural language project iteration
 
-### API Endpoints
+### Authentication
+Powered by Clerk with middleware protection:
 
-- **POST `/api/trpc/invoke`**: Send events to Inngest for AI processing
-- **POST `/api/inngest`**: Inngest webhook for background function execution
+- **Public Routes**: Home, sign-in, sign-up, API
+- **Protected Routes**: All project pages
+- **User Context**: Available throughout the application
 
-### tRPC Procedures
+## 🎯 Usage
 
-- `invoke`: Sends user input to Inngest for AI code generation
-- `hello`: Simple greeting endpoint for testing
+1. **Sign Up/Sign In**: Create an account using Clerk authentication
 
-## 🤖 AI Integration
-
-The application uses Inngest with Gemini 2.0 Flash to generate React/Next.js code snippets:
-
-1. User enters a description in the input field
-2. The request is sent to the tRPC `invoke` procedure
-3. An Inngest event is triggered with the user input
-4. The background function processes the input using an AI agent
-5. The AI generates readable, maintainable code snippets
-6. Results are logged to the console
-
-### AI Agent Configuration
-
-```typescript
-const summaryAgent = createAgent({
-  name: "summary-agent",
-  system: "You are an expert react js and next js developer...",
-  model: gemini({ model: "gemini-2.0-flash" }),
-});
-```
-
-## 🎨 UI Components
-
-The project includes a comprehensive set of shadcn/ui components:
-
-- **Layout**: Sidebar, Navigation, Breadcrumb
-- **Forms**: Input, Textarea, Select, Checkbox, Radio, Switch
-- **Feedback**: Alert, Toast, Progress, Skeleton
-- **Data Display**: Table, Card, Badge, Avatar
-- **Overlays**: Dialog, Popover, Tooltip, Hover Card
-- **Navigation**: Tabs, Accordion, Collapsible
-- **And many more...**
-
-## 📱 Responsive Design
-
-The application includes:
-- Mobile-first responsive design
-- Custom `useIsMobile` hook for device detection
-- Optimized layouts for all screen sizes
-- Touch-friendly interactions
-
-## 🔄 Background Processing
-
-Inngest handles background tasks with:
-- Event-driven architecture
-- Automatic retries and error handling
-- Scalable serverless execution
-- Integration with AI services
-
-## 🚀 Deployment
-
-### Prerequisites
-- PostgreSQL database
-- Inngest account and configuration
-- Environment variables set up
-
-### Deployment Options
-
-1. **Vercel** (Recommended)
-   ```bash
-   npm run build
-   # Deploy to Vercel
+2. **Create a Project**: 
+   ```
+   Describe your website: "A task management app with user authentication, 
+   dashboard, and team collaboration features"
    ```
 
-2. **Docker**
-   ```dockerfile
-   FROM node:18-alpine
-   WORKDIR /app
-   COPY package*.json ./
-   RUN npm install
-   COPY . .
-   RUN npm run build
-   EXPOSE 3000
-   CMD ["npm", "start"]
-   ```
+3. **Watch AI Generate**: The system will:
+   - Parse your requirements
+   - Generate Next.js code with shadcn/ui components
+   - Create a working application in E2B sandbox
+   - Provide live preview and source code
 
-## 🧪 Development
+4. **Iterate and Refine**: 
+   - Chat with the AI to modify features
+   - Request design changes
+   - Add new functionality
+   - Fix bugs and issues
 
-### Available Scripts
+## 🔮 AI Capabilities
+
+The system can generate:
+
+- **Full SaaS Applications**: Complete with authentication, dashboards, and data management
+- **Landing Pages**: Marketing sites with modern design
+- **E-commerce Stores**: Product catalogs, shopping carts, checkout flows
+- **Dashboards**: Analytics, admin panels, data visualization
+- **Interactive Widgets**: Forms, calculators, tools
+- **Content Management**: Blogs, portfolios, documentation sites
+
+## 🚧 Development
+
+### Scripts
 
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
+npm run dev          # Start development server with Turbopack
+npm run build        # Build for production  
 npm run start        # Start production server
 npm run lint         # Run ESLint
 ```
 
-### Database Commands
+### Database Operations
 
 ```bash
+npx prisma studio    # Open Prisma Studio
 npx prisma generate  # Generate Prisma client
 npx prisma db push   # Push schema changes
 npx prisma db seed   # Seed database
-npx prisma studio    # Open Prisma Studio
 ```
 
 ## 🤝 Contributing
@@ -240,20 +285,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [Next.js](https://nextjs.org/) for the amazing React framework
 - [shadcn/ui](https://ui.shadcn.com/) for the beautiful component library
-- [tRPC](https://trpc.io/) for type-safe APIs
-- [Inngest](https://www.inngest.com/) for background job processing
-- [Prisma](https://www.prisma.io/) for the excellent ORM
-- [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
+- [E2B](https://e2b.dev/) for secure code execution environments
+- [Inngest](https://www.inngest.com/) for the agent orchestration platform
+- [Clerk](https://clerk.com/) for seamless authentication
+- [Vercel](https://vercel.com/) for hosting and deployment
 
-## 📞 Support
-
-If you have any questions or need help, please:
-- Open an issue on GitHub
-- Check the documentation
-- Reach out to the maintainers
 
 ---
 
-Built with ❤️ using modern web technologies
+**Built with ❤️ by [KES](https://github.com/maxckes)**
