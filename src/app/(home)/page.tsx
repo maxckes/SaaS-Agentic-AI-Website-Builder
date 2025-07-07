@@ -29,6 +29,7 @@ export default function Home() {
       },
     })
   );
+  
   const listProjects = useQuery(trpc.projects.getMany.queryOptions())
   return (
     <div className="flex flex-col max-w-4xl mx-auto w-full px-4">

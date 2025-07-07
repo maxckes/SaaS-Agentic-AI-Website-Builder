@@ -3,6 +3,7 @@ import { AgentResult, TextMessage } from "@inngest/agent-kit";
 
 export async function getSandboxUrl(sandboxId:string){
     const sandbox = await Sandbox.connect(sandboxId)
+    await sandbox.setTimeout(Number(process.env.SANDBOX_TIMEOUT) || 60000 * 10)
     return sandbox
 }
 

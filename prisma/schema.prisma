@@ -19,6 +19,7 @@ enum MessageRole{
   ASSISTANT
 }
 enum MessageType{
+  TEXT
   RESULT
   ERROR
 }
