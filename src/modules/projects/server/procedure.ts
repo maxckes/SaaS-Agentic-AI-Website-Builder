@@ -1,35 +1,39 @@
 import { inngest } from "@/inngest/client";
 import { prisma } from "@/lib/db";
-import { baseProcedure, createTRPCRouter } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { z } from "zod";
 import { generateSlug } from "random-word-slugs";
 import { TRPCError } from "@trpc/server";
 export const projectRouter = createTRPCRouter({
-    getOne: baseProcedure.input(z.object({
+    getOne: protectedProcedure.input(z.object({
         id:z.string().min(1,{message:"ID is required"}),
-    })).query(async({input})=>{
+    })).query(async({input,ctx})=>{
         const project = await prisma.project.findUnique({
             where:{
-                id:input.id
+                id:input.id,
+                userId:ctx.auth.userId,
             },
         })
         if(!project) throw new TRPCError({code:"NOT_FOUND",message:"Project not found"})
         return project
     }),
-    getMany: baseProcedure.query(async()=>{
+    getMany: protectedProcedure.query(async({ctx})=>{
         const projects = await prisma.project.findMany({
+            where:{
+                userId:ctx.auth.userId,
+            },
             orderBy:{
                 updatedAt:"desc"
             },
         })
         return projects
     }),
-    create: baseProcedure
+    create: protectedProcedure
         .input(z.object({
             value:z.string().min(1,{message:"Value is required"}).max(10000,{message:"Value is too long"}),
         })
         )
-        .mutation(async({input})=>{
+        .mutation(async({input,ctx})=>{
             const createdProject = await prisma.project.create({
                 data:{
                     name:generateSlug(2,{format:"kebab"}),
@@ -39,7 +43,8 @@ export const projectRouter = createTRPCRouter({
                             role:"USER",
                             type:"RESULT"
                         }
-                    }
+                    },
+                    userId:ctx.auth.userId,
                 }
             })
            

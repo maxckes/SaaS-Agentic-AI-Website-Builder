@@ -19,6 +19,7 @@ enum MessageRole{
   ASSISTANT
 }
 enum MessageType{
+  TEXT
   RESULT
   ERROR
 }
@@ -28,6 +29,7 @@ model Project{
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   messages Message[] 
+  userId String
 }
 model Message{
   id String @id @default(uuid())

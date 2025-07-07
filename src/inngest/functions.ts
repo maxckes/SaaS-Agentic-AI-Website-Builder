@@ -1,9 +1,9 @@
 import { inngest } from "./client";
-import { createAgent,createNetwork,createTool,gemini, Tool } from "@inngest/agent-kit";
+import { createAgent,createNetwork,createState,createTool,gemini, Message, Tool } from "@inngest/agent-kit";
 import {Sandbox} from "@e2b/code-interpreter";
 import { getSandboxUrl, lastAssistantMessageContent } from "./utils";
 import { z } from "zod";
-import { PROMPT } from "@/prompt";
+import { PROMPT, RESPONSE_PROMPT, FRAGMENT_TITLE_PROMPT } from "@/prompt";
 import { prisma } from "@/lib/db";
 
 interface AgentState{
@@ -17,8 +17,40 @@ export const codeAgent = inngest.createFunction(
   async ({ event, step }) => {
     const sandboxId = await step.run("get-sandbox-id",async()=>{
       const sandbox = await Sandbox.create('ai-saas-website-builderx')
+      await sandbox.setTimeout(Number(process.env.SANDBOX_TIMEOUT) || 60000 * 10)
       return sandbox.sandboxId
     })
+
+    const previousMessages = await step.run("get-previous-messages",async()=>{
+      const formattedMessages:Message[] = []
+      const messages = await prisma.message.findMany({
+        where:{
+          projectId:event.data.projectId,
+        },
+        orderBy:{
+          createdAt:"desc",
+        },
+        take:3,
+      })
+      for(const message of messages){
+        formattedMessages.push({
+          type:"text",
+          role: message.role== "ASSISTANT" ? "assistant" : "user",
+          content:message.content,
+          
+        })
+      }
+      return formattedMessages
+    }) 
+    const state = createState<AgentState>(
+      {
+        summary:"",
+        files:{},
+      },
+      {
+        messages:previousMessages,
+      }
+    )
      const summaryAgent = createAgent<AgentState>({
         name: "summary-agent",
         description: "An expert coding agent",
@@ -137,6 +169,7 @@ export const codeAgent = inngest.createFunction(
          name:"website-builder-network",
          agents:[summaryAgent],
          maxIter:15,
+         defaultState:state,
          router: async({network})=>{
           const summary = network.state.data.summary
           if(summary){
@@ -145,7 +178,43 @@ export const codeAgent = inngest.createFunction(
           return summaryAgent
          }
       })
-      const result = await network.run(event.data.value)
+      const result = await network.run(event.data.value,{state:state})
+      const fragmentTitleGeneration = createAgent({
+        name:"fragment-title-generation",
+        description:"A agent that generates a title for a code fragment",
+        system:FRAGMENT_TITLE_PROMPT,
+        model:gemini({
+          model:"gemini-2.5-flash",
+        })
+      })
+      const responseAgent = createAgent<AgentState>({
+        name:"response-agent",
+        description:"A agent that generates a response to the user",
+        system:RESPONSE_PROMPT,
+        model:gemini({
+          model:"gemini-2.5-flash",
+        })
+      })
+      const {output:fragmentTitle} = await fragmentTitleGeneration.run(result.state.data.summary)
+      const {output:response} = await responseAgent.run(result.state.data.summary)
+      const generateFradmentTitle =()=>{
+        if(fragmentTitle[0].type != "text"){
+          return "Fragment Title"
+        }
+        if(Array.isArray(fragmentTitle[0].content)){
+          return fragmentTitle[0].content.map((item)=>item.text).join(" ")
+        }
+        return fragmentTitle[0].content
+      }
+      const generateResponse =()=>{
+        if(response[0].type != "text"){
+          return "Response"
+        }
+        if(Array.isArray(response[0].content)){
+          return response[0].content.map((item)=>item.text).join(" ")
+        }
+        return response[0].content
+      }
       const isError = !result.state.data.summary || Object.keys(result.state.data.files).length === 0
       const sandboxUrl = await step.run("get-sandbox-url",async()=>{
         const sandbox = await getSandboxUrl(sandboxId)
@@ -166,12 +235,12 @@ export const codeAgent = inngest.createFunction(
         return await prisma.message.create({
           data:{
             projectId:event.data.projectId,
-            content:result.state.data.summary,
+            content:generateResponse(),
             role:"ASSISTANT",
             type:"RESULT",
             fragments:{
               create:{
-                title:"Fragment",
+                title:generateFradmentTitle(),
                 files:result.state.data.files,
                 sandboxUrl:sandboxUrl,
               }

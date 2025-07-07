@@ -10,12 +10,14 @@ import Link from "next/link";
 import TextareaAutosize from "react-textarea-autosize";
 import { GithubIcon } from "lucide-react";
 import { Hint } from "@/modules/projects/ui/components/hint";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useClerk, useUser } from "@clerk/nextjs";
 
 export default function Home() {
   const router = useRouter();
   const trpc = useTRPC();
   const [value, setValue] = useState("");
+  const { user } = useUser();
+  const clerk = useClerk();
   const createProject = useMutation(
     trpc.projects.create.mutationOptions({
       onError: (error) => {
@@ -27,13 +29,10 @@ export default function Home() {
       },
     })
   );
+  
   const listProjects = useQuery(trpc.projects.getMany.queryOptions())
   return (
     <div className="flex flex-col max-w-4xl mx-auto w-full px-4">
-      {/* Header with theme toggle */}
-      <div className="flex justify-end pt-4 pb-2">
-        <ThemeToggle variant="dropdown" />
-      </div>
       
       <section className="space-y-8 py-[8vh] 2xl:py-24">
         <div className="flex flex-col items-center gap-y-8 text-center">
@@ -41,7 +40,7 @@ export default function Home() {
             <Hint text="View on Github" side="bottom" align="center">
               <Link href="https://github.com/maxckes" target="_blank" className="block relative transition-transform hover:scale-105">
                 <Image
-                  src="https://avatars.githubusercontent.com/u/143759943?v=4"
+                  src={process.env.NEXT_PUBLIC_AVATAR_URL || ""}
                   alt="KOTIKALAPOODI EKARSHA SUMAJ - GitHub Profile"
                   width={120}
                   height={120}
@@ -85,10 +84,13 @@ export default function Home() {
                   placeholder="Describe the SaaS website you want to create...&#10;&#10;Example: 'A task management app with user authentication, dashboard, and team collaboration features'"
                   onKeyDown={(e)=>{
                     if(e.key==="Enter"&&(e.ctrlKey || e.metaKey)){
+                      if(!user) return clerk.openSignIn()
                       e.preventDefault()
                       createProject.mutate({ value: value })
                     }
+                    
                   }}
+
                 />
                 <div className="flex justify-between items-center mt-4 pt-4 border-t border-border/30">
                   <p className="text-xs text-muted-foreground">
@@ -96,7 +98,10 @@ export default function Home() {
                   </p>
                   <Button
                     disabled={createProject.isPending || !value.trim()}
-                    onClick={() => createProject.mutate({ value: value })}
+                    onClick={() => {
+                      if(!user) return clerk.openSignIn()
+                      createProject.mutate({ value: value })
+                    }}
                     className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
                   >
                     {createProject.isPending ? (
@@ -148,7 +153,7 @@ export default function Home() {
          <section className="space-y-8 py-12">
            <div className="flex flex-col items-center gap-y-8 text-center">
              <h2 className="text-3xl font-bold">
-               Recent Projects
+               {user?.fullName}&apos;s Recent Projects
              </h2>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl">
                {listProjects.data.map((project: { id: string; name: string }) => (

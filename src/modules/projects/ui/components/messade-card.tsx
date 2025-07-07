@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Fragment, MessageRole, MessageType } from "@/generated/prisma"
 import { cn } from "@/lib/utils"
+import { useUser } from "@clerk/nextjs"
 import { format } from "date-fns"
 import { Code2Icon, ChevronRightIcon } from "lucide-react"
 import Image from "next/image"
@@ -18,6 +19,7 @@ interface UserMessageCardProps{
     content:string
 }
 const UserMessageCard = ({content}:UserMessageCardProps) => {
+    const { user } = useUser();
     return (
         <div className="flex justify-end pb-6 pr-2 pl-10 group">
             <div className="flex items-start gap-4 max-w-[80%]">
@@ -35,8 +37,9 @@ const UserMessageCard = ({content}:UserMessageCardProps) => {
                 
                 <div className="relative flex-shrink-0 group">
                     <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur opacity-25 group-hover:opacity-40 transition-opacity"></div>
+                    
                     <Image 
-                        src="https://github.com/shadcn.png" 
+                        src={user?.imageUrl || ""} 
                         alt="User" 
                         width={36} 
                         height={36} 

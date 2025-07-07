@@ -6,7 +6,6 @@ import {useTRPC} from "@/trpc/client"
 import {Button} from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ChevronDownIcon, SettingsIcon, HomeIcon, FolderIcon } from "lucide-react"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 interface Props{
     projectID:string
@@ -35,7 +34,7 @@ export const ProjectHeader = ({projectID}:Props) => {
                                 <div className="relative">
                                     <div className="absolute -inset-1 bg-gradient-to-r from-green-500/30 to-emerald-500/30 rounded-full blur opacity-25 group-hover:opacity-40 transition-opacity"></div>
                                     <Image 
-                                        src="https://avatars.githubusercontent.com/u/143759943?v=4" 
+                                        src={process.env.NEXT_PUBLIC_AVATAR_URL || ""} 
                                         alt="MaxC" 
                                         width={32} 
                                         height={32} 
@@ -69,7 +68,7 @@ export const ProjectHeader = ({projectID}:Props) => {
                                 <div className="relative">
                                     <div className="absolute -inset-1 bg-gradient-to-r from-green-500/30 to-emerald-500/30 rounded-full blur opacity-40"></div>
                                     <Image 
-                                        src="https://avatars.githubusercontent.com/u/143759943?v=4" 
+                                        src={process.env.NEXT_PUBLIC_AVATAR_URL || ""} 
                                         alt="MaxC" 
                                         width={36} 
                                         height={36} 
@@ -115,10 +114,7 @@ export const ProjectHeader = ({projectID}:Props) => {
                 </DropdownMenu>
             </div>
             
-            {/* Right side - Theme toggle and additional controls */}
-            <div className="flex items-center gap-3">
-                <ThemeToggle variant="dropdown" />
-            </div>
+           
         </header>
     )
 }
