@@ -6,11 +6,11 @@ interface Props{
 
 export default function Layout({children}:Props){
     return(
-        <main className="relative min-h-screen bg-background dark:bg-[radial-gradient(#393439_1px,transparent_1px)] bg-[radial-gradient(#dadde2_1px,transparent_1px)] [background-size:16px_16px]">
+        <div className="relative min-h-screen bg-background">
             <Navbar />
-            <div className="flex flex-col px-4 pb-4">
+            <main className="relative">
                 {children}
-            </div>
-        </main>
+            </main>
+        </div>
     )
 }
