@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, RefreshCw, Home, Bug, ArrowLeft } from "lucide-react";
@@ -12,6 +13,8 @@ interface ErrorPageProps {
 }
 
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
+  const router = useRouter();
+  
   useEffect(() => {
     // Log the error to an error reporting service
     console.error("Application error:", error);
@@ -73,7 +76,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
               <Button
                 variant="outline"
                 className="flex-1 border-border/50 hover:bg-accent/50 transition-all duration-200 hover:scale-[1.02]"
-                onClick={() => window.history.back()}
+                onClick={() => router.back()}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Go Back
